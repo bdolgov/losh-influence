@@ -186,7 +186,6 @@ std::string HumanPlayer::read()
 GameUi::GameUi(const QString& map, const QStringList& players)
 {
 	game = new Game;
-	Log::setLogWriter(this);
 	for (auto &i : players)
 	{
 		if (i != "__human__")
@@ -200,8 +199,8 @@ GameUi::GameUi(const QString& map, const QStringList& players)
 			game->addPlayer(new HumanPlayer()); // форма
 		}
 	}
-	game->loadMap(map.toStdString());
 	log = new QPlainTextEdit;
+	game->loadMap(map.toStdString());
 	QSplitter *l = new QSplitter;
 	QScrollArea *area = new QScrollArea;
 	l->addWidget(area);
@@ -216,6 +215,7 @@ GameUi::GameUi(const QString& map, const QStringList& players)
 	l2->addWidget(l);
 	l2->addWidget(step);
 	setLayout(l2);
+	Log::setLogWriter(this);
 }
 
 void GameUi::addComment(const std::string& s)
