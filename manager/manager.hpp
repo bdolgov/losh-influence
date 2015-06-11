@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <memory>
+#include <QDebug>
 
 #define TIMEOUT 1000
 
@@ -32,7 +33,7 @@ struct LogicError : std::logic_error
 class Player
 {
 	public:
-		enum Status { Waiting, Fortify, Conquest, Broken };
+		enum Status { Waiting, Fortify, Conquest, Broken, Lost };
 		Status status() const;
 		void setStatus(Status status);
 
@@ -54,6 +55,7 @@ class Player
 		Player(int _id, PlayerEngine* _engine): m_id(_id), m_engine(_engine) {}
 		int n_failed = 0;
 		int fortificationLimit = 0;
+		int sequentalMaps = 0;
 };
 
 class Cell
@@ -75,8 +77,10 @@ class Game
 	private:
 		std::map<Coord, std::unique_ptr<Cell>> cells;
 		std::vector<std::unique_ptr<Player>> players;
+		int currentPlayer = 0;
 
 		Cell* findCell(int x, int y);
+		Player *m_winner = nullptr;
 
 	public:
 		enum AttackResult { Null, Won, Draw, Lost };
@@ -89,7 +93,11 @@ class Game
 		bool gameFinished();
 
 		void loadMap(const std::string& path);
-		void round();
+		void step();
+
+		std::vector<Cell*> getCells() const;
+
+		Player *winner();
 };
 
 class PlayerEngine
@@ -173,27 +181,44 @@ class StdioPlayer : public TextPlayer
 };
 
 #ifdef QT_CORE_LIB
+#include <QIODevice>
+#include <QTimer>
+#include <QObject>
+#include <QEventLoop>
+#include <QDateTime>
+
 class QIODevicePlayer : public TextPlayer
 {
 	public:
-		QIODevicePlayer(QIODevice *_io): io(_io) {}
+		QIODevicePlayer(QIODevice *_io, int _timeout = 1000): io(_io), timeout(_timeout) {}
 
 	protected:
 		void write(const std::string& s)
 		{
-			io->write(s.c_str());
+			qDebug() << "WRITING" << s.c_str();
+			io->write((s + "\n").c_str());
+			qDebug() << "waitForBytesWritten" << io->waitForBytesWritten(timeout);
 		}
 
 		std::string read()
 		{
+			QDateTime now = QDateTime::currentDateTime(), timeout = now.addMSecs(this->timeout);
+			bool ret = true;
+			while (!io->canReadLine() && ret)
+			{
+				now = QDateTime::currentDateTime();
+				ret = io->waitForReadyRead(now.msecsTo(timeout));
+				qDebug() << ret;
+			}
 			if (!io->canReadLine())
 			{
-				QEventLoop evloop;
+				//qDebug() << "waitForReadyRead" << io->waitForReadyRead(1000);
+				/*QEventLoop evloop;
 				QTimer timer;
 				timer.start(TIMEOUT);
 				QObject::connect(&timer, &QTimer::timeout, &evloop, &QEventLoop::quit);
-				QObject::connect(io, &QProcess::readyRead, &evloop, &QEventLoop::quit);
-				evloop.exec();
+				QObject::connect(io, &QIODevice::readyRead, &evloop, &QEventLoop::quit);
+				evloop.exec();*/
 			}
 			if (!io->canReadLine())
 			{
@@ -207,6 +232,7 @@ class QIODevicePlayer : public TextPlayer
 
 	private:
 		QIODevice *io;
+		int timeout;
 };
 #endif
 
@@ -217,7 +243,6 @@ class StderrLogWriter : public LogWriter
 		void addComment(const std::string& s);
 };
 
-LogWriter *logWriter = nullptr;
 
 extern Log logger;
 

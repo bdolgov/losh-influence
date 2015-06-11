@@ -195,6 +195,10 @@ PlayerEngine::Command TextPlayer::getCommand()
 	std::string incoming = read();
 	if (incoming.empty())
 		return Command();
+	if (*(incoming.rbegin()) == '\n')
+	{
+		incoming.resize(incoming.size() - 1);
+	}
 	logger() << "Принята команда " << incoming; 
 	std::stringstream ss(incoming);
 	Command ret;
@@ -383,6 +387,11 @@ Game::AttackResult Game::attack(Player* player, Cell* cell, Cell* other)
 	return result;
 }
 
+Player *Game::winner()
+{
+	return m_winner;
+}
+
 void Game::processPlayer(Player* player)
 {
 	if (player->status() == player->Broken)
@@ -390,13 +399,46 @@ void Game::processPlayer(Player* player)
 		logger() << "Ход " << player << " пропускается, так как он дисквалифицирован";
 		return;
 	}
+	if (player->status() == player->Lost)
+	{
+		logger() << "Ход " << player << " пропускается, так как он проиграл";
+		return;
+	}
 	if (player->status() != player->Waiting)
 	{
 		logger() << "Внутреннаяя ошибка: processPlayer при статусе " << static_cast<int>(player->status());
-		throw std::runtime_error("RUNTIME ERROR");
+		return;
+		//throw std::runtime_error("RUNTIME ERROR");
+	}
+	PlayerEngine *pe = player->engine();
+	int cnt = 0, cntOther = 0;
+	for (auto &i : cells)
+	{
+		if (i.second->owner == player)
+		{
+			++cnt;
+		}
+		else if (i.second->owner)
+		{
+			++cntOther;
+		}
+	}
+	if (!cnt)
+	{
+		logger() << "Игрок " << player << " проиграл";
+		player->setStatus(player->Lost);
+		pe->sendGameResult(-1);
+		return;
+	}
+	if (!cntOther)
+	{
+		logger() << "Игрок" << player << " победил";
+		m_winner = player;
+		pe->sendGameResult(1);
+		return;
 	}
 	logger() << "Начинается ход " << player;
-	PlayerEngine *pe = player->engine();
+	
 	if (player->needHello())
 	{
 		pe->sendHello(player->id());
@@ -410,6 +452,10 @@ void Game::processPlayer(Player* player)
 		try
 		{
 			auto cmd = pe->getCommand();
+			if (cmd.type != cmd.Map)
+			{
+				player->sequentalMaps = 0;
+			}
 			if (cmd.type == cmd.Null)
 			{
 				logger() << player << " дисквалифицирован в связи с остановкой программы";
@@ -419,6 +465,11 @@ void Game::processPlayer(Player* player)
 			else if (cmd.type == cmd.Map)
 			{
 				logger() << player << " запрашивает карту";
+				if (++player->sequentalMaps > 5)
+				{
+					logger() << "Ошибка: запросил карту больше 5 раз подряд";
+					throw LogicError();
+				}
 				std::vector<int> pplayers(5);
 				std::vector<Cell*> pcells;
 				for (auto &i : cells)
@@ -498,12 +549,10 @@ Cell* Game::findCell(int x, int y)
 	throw LogicError();
 }
 
-void Game::round()
+void Game::step()
 {
-	for (auto &i : players)
-	{
-		processPlayer(&*i);
-	}
+	processPlayer(&*players[currentPlayer]);
+	currentPlayer = (currentPlayer + 1) % players.size();
 }
 
 void StderrLogWriter::addCell(Cell*)
@@ -515,14 +564,12 @@ void StderrLogWriter::addComment(const std::string& s)
 	std::cerr << s << std::endl;
 }
 
-#if 0
-int main(int ac, char** av)
+std::vector<Cell*> Game::getCells() const
 {
-	Game game;
-	game.addPlayer(new StdioPlayer);
-	game.addPlayer(new StdioPlayer);
-	game.loadMap("../maps/map01.txt");
-	for (int i = 0; i < 10; ++i)
-		game.round();
+	std::vector<Cell*> ret;
+	for (auto &i : cells)
+	{
+		ret.emplace_back(&*i.second);
+	}
+	return ret;
 }
-#endif
