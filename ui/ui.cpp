@@ -192,6 +192,10 @@ GameUi::GameUi(const QString& map, const QStringList& players)
 		{
 			QProcess *p = new QProcess(this);
 			p->start(i);
+			if (!p->waitForStarted())
+			{
+				QMessageBox::critical(this, "Error starting program", p->errorString());
+			}
 			game->addPlayer(new QIODevicePlayer(p));
 		}
 		else
