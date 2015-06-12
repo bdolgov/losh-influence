@@ -426,7 +426,7 @@ void Game::processPlayer(Player* player)
 	if (!cnt)
 	{
 		logger() << "Игрок " << player << " проиграл";
-		player->setStatus(player->Lost);
+		player->m_status = player->Lost;
 		pe->sendGameResult(-1);
 		return;
 	}
