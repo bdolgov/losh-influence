@@ -8,6 +8,8 @@
 
 #define FAILS 100
 
+bool logMap = false;
+
 Log logger;
 LogWriter* Log::logWriter = nullptr;
 
@@ -175,7 +177,9 @@ void TextPlayer::sendMap(const std::vector<Cell*>& cells, const std::vector<int>
 		}
 	}
 	text << players[1] << " " << players[2] << " " << players[3] << " " << players[4];
-	write(text.str());
+	std::string ret = text.str();
+	if (logMap) logger() << "Ответ на запрос карты:\n" << ret;
+	write(ret);
 }
 
 void StdioPlayer::write(const std::string& s)

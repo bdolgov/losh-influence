@@ -245,5 +245,6 @@ class StderrLogWriter : public LogWriter
 
 
 extern Log logger;
+extern bool logMap;
 
 #endif

@@ -58,11 +58,15 @@ StartupUi::StartupUi()
 	QPushButton *loadMapB = new QPushButton("Load...");
 	l->addRow("Map", loadMapB);
 	QObject::connect(loadMapB, SIGNAL(clicked()), this, SLOT(loadMap()));
+	QCheckBox *logMapCheckbox = new QCheckBox("Показывать результат MAP");
+	l->addRow(logMapCheckbox);
+	QObject::connect(logMapCheckbox, &QCheckBox::stateChanged, [](int s) { logMap = s == 2; });
 	QPushButton *startB = new QPushButton("Start");
 	l->addRow(startB);
 	QObject::connect(startB, SIGNAL(clicked()), this, SLOT(start()));
 	setLayout(l);
 	setWindowTitle("Influence");
+
 }
 
 void StartupUi::loadMap()
