@@ -505,6 +505,8 @@ void Game::processPlayer(Player* player)
 					if (i.second->owner == player)
 						++player->fortificationLimit;
 				}
+				player->fortificationLimit -= turn == player->id();
+				qDebug() << "turn" << turn << "pid+1" << player->id();
 				pe->sendOk();
 				logger() << player << " перешел в режим укрепления. Лимит: " << player->fortificationLimit;
 			}
@@ -557,6 +559,8 @@ void Game::step()
 {
 	processPlayer(&*players[currentPlayer]);
 	currentPlayer = (currentPlayer + 1) % players.size();
+	if (currentPlayer == 0)
+		++turn;
 }
 
 void StderrLogWriter::addCell(Cell*)

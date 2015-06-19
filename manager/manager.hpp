@@ -82,6 +82,8 @@ class Game
 		Cell* findCell(int x, int y);
 		Player *m_winner = nullptr;
 
+		int turn = 0;
+
 	public:
 		enum AttackResult { Null, Won, Draw, Lost };
 		void addPlayer(PlayerEngine* player);
