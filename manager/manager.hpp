@@ -51,10 +51,11 @@ class Player
 		PlayerEngine *m_engine;
 		Status m_status = Waiting;
 		bool sentHello = false;
-		Player(int _id, PlayerEngine* _engine): m_id(_id), m_engine(_engine) {}
+		Player(int _id, PlayerEngine* _engine, const std::string& _name): m_id(_id), m_engine(_engine), name(_name) {}
 		int n_failed = 0;
 		int fortificationLimit = 0;
 		int sequentalMaps = 0;
+		std::string name;
 };
 
 class Cell
@@ -85,15 +86,16 @@ class Game
 
 	public:
 		enum AttackResult { Null, Won, Draw, Lost };
-		void addPlayer(PlayerEngine* player);
+		void addPlayer(PlayerEngine* player, std::string name = "");
 
 		void addPower(Player* player, Cell* cell);
 		Game::AttackResult attack(Player* player, Cell* cell, Cell* other);
 
 		void processPlayer(Player* player);
-		bool gameFinished();
+		bool gameFinished() const;
 
 		void loadMap(const std::string& path);
+		void loadMap(std::istream& f);
 		void step();
 
 		std::vector<Cell*> getCells() const;

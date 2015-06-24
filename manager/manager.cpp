@@ -47,12 +47,17 @@ void Player::failed()
 
 void Game::loadMap(const std::string& path)
 {
-	if(players.empty())
+	std::ifstream f(path);
+	loadMap(f);
+}
+
+void Game::loadMap(std::istream& f)
+{
+	if (players.empty())
 	{
 		throw std::logic_error("You must add players before loading the map!");
 	}
-	std::ifstream f(path);
-	int n; f >> n;
+	int n = -1; f >> n;
 	for (int i = 0; i < n; ++i)
 	{
 		int x, y, s, m;
@@ -83,13 +88,24 @@ void Game::loadMap(const std::string& path)
 	}
 }
 
-void Game::addPlayer(PlayerEngine *player)
+void Game::addPlayer(PlayerEngine *player, std::string name)
 {
 	if (!cells.empty())
 	{
 		throw std::logic_error("You must not add players after loading the map!");
 	}
-	players.emplace_back(new Player(players.size() + 1, player));
+
+	int pid = players.size() + 1;
+	if (name == "")
+	{
+		name = "Player " + std::to_string(pid);
+	}
+	else
+	{
+		name += " (" + std::to_string(pid) + ")";
+	}
+
+	players.emplace_back(new Player(pid, player, name));
 }
 
 bool Cell::visibleTo(Player* player)
@@ -129,7 +145,7 @@ std::ostream& operator<<(std::ostream& o, Player *p)
 	}
 	else
 	{
-		o << "Player " << p->id();
+		o << p->name;
 	}
 	return o;
 }
@@ -506,7 +522,6 @@ void Game::processPlayer(Player* player)
 						++player->fortificationLimit;
 				}
 				player->fortificationLimit -= turn == player->id();
-				qDebug() << "turn" << turn << "pid+1" << player->id();
 				pe->sendOk();
 				logger() << player << " перешел в режим укрепления. Лимит: " << player->fortificationLimit;
 			}
@@ -580,4 +595,9 @@ std::vector<Cell*> Game::getCells() const
 		ret.emplace_back(&*i.second);
 	}
 	return ret;
+}
+
+bool Game::gameFinished() const
+{
+	return m_winner;
 }
