@@ -6,7 +6,6 @@
 #include <vector>
 #include <map>
 #include <memory>
-#include <QDebug>
 
 #define TIMEOUT 1000
 
@@ -188,6 +187,7 @@ class StdioPlayer : public TextPlayer
 #include <QObject>
 #include <QEventLoop>
 #include <QDateTime>
+#include <QDebug>
 
 class QIODevicePlayer : public TextPlayer
 {
@@ -197,9 +197,7 @@ class QIODevicePlayer : public TextPlayer
 	protected:
 		void write(const std::string& s)
 		{
-			qDebug() << "WRITING" << s.c_str();
 			io->write((s + "\n").c_str());
-			qDebug() << "waitForBytesWritten" << io->waitForBytesWritten(timeout);
 		}
 
 		std::string read()
@@ -210,17 +208,6 @@ class QIODevicePlayer : public TextPlayer
 			{
 				now = QDateTime::currentDateTime();
 				ret = io->waitForReadyRead(now.msecsTo(timeout));
-				qDebug() << ret;
-			}
-			if (!io->canReadLine())
-			{
-				//qDebug() << "waitForReadyRead" << io->waitForReadyRead(1000);
-				/*QEventLoop evloop;
-				QTimer timer;
-				timer.start(TIMEOUT);
-				QObject::connect(&timer, &QTimer::timeout, &evloop, &QEventLoop::quit);
-				QObject::connect(io, &QIODevice::readyRead, &evloop, &QEventLoop::quit);
-				evloop.exec();*/
 			}
 			if (!io->canReadLine())
 			{
