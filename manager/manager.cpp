@@ -436,7 +436,7 @@ void Game::processPlayer(Player* player)
 	}
 	if (!cntOther)
 	{
-		logger() << "Игрок" << player << " победил";
+		logger() << "Игрок " << player << " победил";
 		m_winner = player;
 		pe->sendGameResult(1);
 		return;
