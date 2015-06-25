@@ -12,12 +12,12 @@ class Player;
 struct Game
 {
 	int id;
-	std::string reason;
+	std::string reason, map;
 	struct Participation
 	{
 		Player *p;
 		bool won;
-		int oldRating, newRating;
+		double oldRating, newRating;
 	} p[4];
 };
 
@@ -31,6 +31,7 @@ class Player
 		Player(int a, QString b): id(a), name(b) {}
 		bool operator<(const Player& other) const { return score > other.score; }
 		vector<Game*> games;
+		double maxrating = 0;
 };
 
 vector<Player> _players = {
@@ -53,7 +54,7 @@ vector<Player> _players = {
 {45473, "Пётр Григорьев"},
 {45859, "Виктория Чигур"},
 {46813, "Богдан Синицын"},
-{487, "Владислав Макеев"},
+{487, "Изи Экзэ"},
 {53837, "Николай Оплачко"},
 {54823, "Ярослав Гераськин"},
 {55339, "Георгий Халин"},
@@ -85,6 +86,11 @@ vector<Player> _players = {
 {90509, "Антон Алёшин"},
 {92558, "Азамат Мифтахов"},
 {95704, "Борис Соболев"},
+{101, "Сломал ноутбук"},
+{102, "Данил Гейдебрехт"},
+{103, "Алексей Глазкин"},
+{104, "Матвей Грицаев"},
+{105, "Павлов"},
 {97385, "Артем Переведенцев"}};
 
 void process(QString text)
@@ -118,7 +124,8 @@ int main(int ac, char** av)
 			Game *me = new Game;
 			me->id = play_id;
 			int map = rand() % 4 + 1;
-			QString cfg = QString("MAP /root/losh-influence/maps/tmap0%1.txt\n"
+			me->map = std::to_string(map);
+			QString cfg = QString("MAP /root/losh-influence/maps/t2map0%1.txt\n"
 					"PLAYER /root/exe/%2 %3\n"
 					"PLAYER /root/exe/%4 %5\n"
 					"PLAYER /root/exe/%6 %7\n"
@@ -184,6 +191,22 @@ int main(int ac, char** av)
 		}
 #endif
 	}
+	for (auto &i : players)
+	{
+		i->score = 0;
+		for (auto j = i->games.rbegin(); j != i->games.rbegin() + i->games.size() / 4; ++j)
+		{
+			for (auto k : (*j)->p)
+			{
+				if (k.p == i)
+				{
+					i->score += k.newRating;
+					i->maxrating = max(i->maxrating, k.newRating);
+				}
+			}
+		}
+		i->score /= i->games.size() / 4;
+	}
 	sort(players.begin(), players.end(), [](Player* a, Player* b) { return *a < *b; });
 	ofstream full("output/full_res.json");
 	full << "[";
@@ -197,7 +220,10 @@ int main(int ac, char** av)
 		full << "{" 
 				<< "\"name\":\"" << i->name.toStdString() << "\"," 
 				<< "\"player_id\":" << i->id << ","
-				<< "\"rating\":" << i->score
+				<< "\"rating\":" << i->score << ","
+				<< "\"won\":" << i->wins << ","
+				<< "\"total\":" << i->games.size() << ","
+				<< "\"maxrating\":" << i->maxrating
 			<< "}";
 		ofstream p(QString("output/player_%1_res.json").arg(i->id).toStdString());
 		p << "{"
@@ -206,6 +232,7 @@ int main(int ac, char** av)
 			<< "\"rating\":" << i->score << ","
 			<< "\"place\":" << place << ","
 			<< "\"won\":" << i->wins << ","
+			<< "\"maxrating\":" << i->maxrating << ","
 			<< "\"games\":[";
 		bool first = true;
 		for (auto j : i->games)
@@ -218,6 +245,7 @@ int main(int ac, char** av)
 			p << "{"
 				<< "\"game_id\":" << j->id << ","
 				<< "\"reason\":\"" << j->reason << "\","
+				<< "\"map\":\"" << j->map << "\","
 				<< "\"players\":[";
 			bool first2 = true;
 			for (auto k : j->p)

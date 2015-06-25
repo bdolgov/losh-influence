@@ -2,6 +2,7 @@
 #include <utility>
 #include <map>
 #include <cstdlib>
+#include <algorithm>
 
 using namespace std;
 
