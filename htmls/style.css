@@ -1,0 +1,32 @@
+.container{
+    display:table;
+    width: auto;
+    border-collapse: collapse;
+    margin: 0 auto;
+}
+
+.heading{
+    font-weight: bold;
+    display:table-row;
+    background-color:#C91622;
+    text-align: center;
+    line-height: 25px;
+    font-size: 14px;
+    font-family:georgia;
+    color:#fff;                                                                    
+}
+                                                                            
+                                                                            
+.table-row{  
+    display: table-row;
+    text-align: center;
+    background-color: #FFFFFF;
+}
+
+
+.col{ 
+    width: auto;
+    padding: 1px 15px 1px 15px;
+    display:table-cell;
+    border: 1px solid #CCC;
+}

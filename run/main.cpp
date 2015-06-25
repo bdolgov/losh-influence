@@ -79,7 +79,7 @@ int main(int ac, char** av)
 			qDebug() << p->errorString();
 			return 1;
 		}
-		game.addPlayer(new QIODevicePlayer(p), i.second);
+		game.addPlayer(new QIODevicePlayer(p, 100), i.second);
 	}
 
 	std::ifstream mapFile(map);
