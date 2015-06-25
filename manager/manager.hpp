@@ -185,9 +185,6 @@ class StdioPlayer : public TextPlayer
 
 #ifdef QT_CORE_LIB
 #include <QIODevice>
-#include <QTimer>
-#include <QObject>
-#include <QEventLoop>
 #include <QDateTime>
 #include <QDebug>
 
@@ -206,7 +203,7 @@ class QIODevicePlayer : public TextPlayer
 		{
 			QDateTime now = QDateTime::currentDateTime(), timeout = now.addMSecs(this->timeout);
 			bool ret = true;
-			while (!io->canReadLine() && ret)
+			while (!io->canReadLine() && ret && now < timeout)
 			{
 				now = QDateTime::currentDateTime();
 				ret = io->waitForReadyRead(now.msecsTo(timeout));

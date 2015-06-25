@@ -72,6 +72,7 @@ int main(int ac, char** av)
 	{
 		QProcess *p = new QProcess;
 		procs.push_back(p);
+		p->setWorkingDirectory("trash");
 		p->start(QString::fromStdString(i.first));
 		if (!p->waitForStarted())
 		{
