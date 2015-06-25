@@ -1,0 +1,60 @@
+.mya:link{
+    color: #000000;
+    text-decoration: none;
+}
+
+.mya:hover {
+    color: #333399;
+    text-decoration: underline;
+}
+.mya:visited {
+    color: #000000;
+}
+
+h1 {
+    width: 800px;
+    text-align: center;
+}
+.button-reset {
+    margin-top: 20px;
+}
+
+#tbl {
+    min-width: 800px;
+    margin: 20px 0 0 0;
+}
+
+.container{
+    display:table;
+    width: auto;
+    border-collapse: collapse;
+    margin-top: 20px auto;
+}
+
+.heading{
+    font-weight: bold;
+    display:table-row;
+    background-color:#C91622;
+    text-align: center;
+    line-height: 25px;
+    font-size: 14px;
+    font-family:georgia;
+    color:#fff;                                                                    
+}
+                                                                            
+                                                                            
+.table-row{  
+    display: table-row;
+    width: 100%;
+    text-align: center;
+    background-color: #FFFFFF;
+}
+
+
+.col{ 
+    width: auto;
+    padding: 1px 15px 1px 15px;
+    display:table-cell;
+    border: 1px solid #CCC;
+    vertical-align: middle;
+}
