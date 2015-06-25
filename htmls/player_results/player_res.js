@@ -21,8 +21,7 @@ $.getJSON("../jsons/player_" + player_id.toString() + "_res.json").done(function
         axes: {
             xaxis: {
                 padMin: 1 ,
-                min: 0,
-                max: 310,
+                min: 0,            
                 tickOptions: {
                     formatString: '%d',
                 }
