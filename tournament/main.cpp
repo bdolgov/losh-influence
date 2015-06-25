@@ -26,7 +26,7 @@ class Player
 	public:
 		int id;
 		QString name;
-		int score = 1500;
+		double score = 1500;
 		int wins = 0;
 		Player(int a, QString b): id(a), name(b) {}
 		bool operator<(const Player& other) const { return score > other.score; }
@@ -103,7 +103,7 @@ int main(int ac, char** av)
 	{
 		players.push_back(&i);
 	}
-	for (int s = 0; s < 300; ++s)
+	for (int s = 0; s < 400; ++s)
 	{
 		random_shuffle(players.begin(), players.end());
 		if (s % 5 == 4)
@@ -124,7 +124,7 @@ int main(int ac, char** av)
 					"PLAYER /root/exe/%6 %7\n"
 					"PLAYER /root/exe/%8 %9\n"
 					"LOG output/%10.log\n"
-					"STEPS 256\n")
+					"STEPS 512\n")
 				.arg(map)
 				.arg(players[i]->id).arg(players[i]->name)
 				.arg(players[i+1]->id).arg(players[i+1]->name)
@@ -156,11 +156,13 @@ int main(int ac, char** av)
 					double Ea1 = 1.0 / (1 + pow(10, (players[i + k]->score - players[i + j]->score) / 400.0));
 					double Ea2 = 1.0 / (1 + pow(10, (players[i + j]->score - players[i + k]->score) / 400.0));
 					double sa = 0.5, sb = 0.5;
+					double K = 20;
 					if (w - 1 == j)
 						sa = 1, sb = 0;
 					else if (w - 1 == k)
 						sa = 0, sb = 1;
-					double K = 30;
+					else
+						K = 0;
 					players[i + j]->score += K * (sa - Ea1);
 					players[i + k]->score += K * (sb - Ea2);
 				}
